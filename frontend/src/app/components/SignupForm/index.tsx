@@ -69,56 +69,61 @@ export default function SignupForm() {
 	}
 
 	return (
-		<form className={styles.form} onSubmit={onSubmit}>
-			<div className={styles.field}>
-				<label htmlFor="signup-name" className={styles.label}>
-					ユーザー名
-				</label>
-				<input
-					id="signup-name"
-					className={styles.input}
-					{...register("name")}
-					type="text"
-					placeholder="your name"
-					required
-				/>
-			</div>
-			<div className={styles.field}>
-				<label htmlFor="signup-email" className={styles.label}>
-					メールアドレス
-				</label>
-				<input
-					id="signup-email"
-					className={styles.input}
-					{...register("email")}
-					type="email"
-					placeholder="you@example.com"
-					required
-				/>
-			</div>
-			<div className={styles.field}>
-				<label htmlFor="signup-password" className={styles.label}>
-					パスワード
-				</label>
-				<input
-					id="signup-password"
-					className={styles.input}
-					{...register("password")}
-					type="password"
-					required
-				/>
-			</div>
-			{signupError && (
-				<p className={styles.error} role="alert">
-					{signupError}
-				</p>
-			)}
-			<button
-				type="submit"
-				className={`${styles.button} ${styles.buttonPrimary}`}
-			>
-				サインアップ
-			</button>
-		</form>
+		<>
+			<p className="page-description">
+				ユーザー名、メールアドレス、パスワードを入力してください。
+			</p>
+			<form className={styles.form} onSubmit={onSubmit}>
+				<div className={styles.field}>
+					<label htmlFor="signup-name" className={styles.label}>
+						ユーザー名
+					</label>
+					<input
+						id="signup-name"
+						className={styles.input}
+						{...register("name")}
+						type="text"
+						placeholder="your name"
+						required
+					/>
+				</div>
+				<div className={styles.field}>
+					<label htmlFor="signup-email" className={styles.label}>
+						メールアドレス
+					</label>
+					<input
+						id="signup-email"
+						className={styles.input}
+						{...register("email")}
+						type="email"
+						placeholder="you@example.com"
+						required
+					/>
+				</div>
+				<div className={styles.field}>
+					<label htmlFor="signup-password" className={styles.label}>
+						パスワード
+					</label>
+					<input
+						id="signup-password"
+						className={styles.input}
+						{...register("password")}
+						type="password"
+						required
+					/>
+				</div>
+				{signupError && (
+					<p className={styles.error} role="alert">
+						{signupError}
+					</p>
+				)}
+				<button
+					type="submit"
+					className={`${styles.button} ${styles.buttonPrimary}`}
+				>
+					サインアップ
+				</button>
+			</form>
+		</>
 	);
 }
