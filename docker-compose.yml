@@ -1,4 +1,4 @@
-version: '3'
+version: "3"
 
 services:
   mavs-task:
@@ -40,9 +40,9 @@ services:
       POSTGRES_PASSWORD: root
       PGPASSWORD: root123
       POSTGRES_DB: mavs-task-db
-      TZ: 'Asia/Tokyo'
+      TZ: "Asia/Tokyo"
     ports:
-      - 5432:5432
+      - 5433:5433
     volumes:
       - ./postgres/initdb:/docker-entrypoint-initdb.d
 
