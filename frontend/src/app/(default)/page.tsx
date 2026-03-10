@@ -57,6 +57,9 @@ export default function Home() {
               <Link href="/signin" className="quick-link">
                 サインイン画面へ
               </Link>
+              <Link href="/signup" className="quick-link">
+                新規登録する
+              </Link>
             </div>
           </>
         )}
