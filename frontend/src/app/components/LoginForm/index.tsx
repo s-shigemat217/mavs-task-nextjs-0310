@@ -1,8 +1,8 @@
 "use client";
 import { useForm } from "react-hook-form";
-import { LoginRequest } from "@/app/types/Login/LoginReqest";
-import { LoginResponse } from "@/app/types/Login/LoginResponse";
-import { useLoginData } from "@/app/hooks/useLoginData";
+import { LoginRequest } from "@/types/Login/LoginReqest";
+import { LoginResponse } from "@/types/Login/LoginResponse";
+import { useLoginData } from "@/hooks/useLoginData";
 import { useRouter } from "next/navigation";
 import styles from "./loginForm.module.css";
 
