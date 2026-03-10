@@ -7,17 +7,29 @@ import styles from "./articles.module.css";
 import { useLoginData } from "@/hooks/useLoginData";
 // import AuthGuard from "../components/AuthGuard";
 
-type SortType =
-  | "updated_desc"
-  | "updated_asc"
-  | "created_desc"
-  | "created_asc";
+type SortType = "updated_desc" | "updated_asc" | "created_desc" | "created_asc";
 
 export default function ArticlesPage() {
   const [articles, setArticles] = useState<Article[]>([]);
   const [sortType, setSortType] = useState<SortType>("updated_desc");
   const { loginData, isLoginDataLoaded } = useLoginData();
   const token = loginData?.token;
+
+  useEffect(() => {
+    const savedSortType = window.localStorage.getItem("article_list_sort_type");
+    if (
+      savedSortType === "updated_desc" ||
+      savedSortType === "updated_asc" ||
+      savedSortType === "created_desc" ||
+      savedSortType === "created_asc"
+    ) {
+      setSortType(savedSortType);
+    }
+  }, []);
+
+  useEffect(() => {
+    window.localStorage.setItem("article_list_sort_type", sortType);
+  }, [sortType]);
 
   useEffect(() => {
     if (!isLoginDataLoaded) return;
@@ -30,9 +42,7 @@ export default function ArticlesPage() {
         Authorization: `Bearer ${token}`,
       },
     })
-      .then((res) =>
-        res.json().then((data) => ({ ok: res.ok, data })),
-      )
+      .then((res) => res.json().then((data) => ({ ok: res.ok, data })))
       .then(({ ok, data }) => {
         if (!ok) {
           setArticles([]);
@@ -71,7 +81,9 @@ export default function ArticlesPage() {
     const list = [...articles];
     const parseDate = (value: string) => new Date(value).getTime();
     const compareByDate = (a: string, b: string, direction: "asc" | "desc") =>
-      direction === "asc" ? parseDate(a) - parseDate(b) : parseDate(b) - parseDate(a);
+      direction === "asc"
+        ? parseDate(a) - parseDate(b)
+        : parseDate(b) - parseDate(a);
 
     switch (sortType) {
       case "updated_asc":
