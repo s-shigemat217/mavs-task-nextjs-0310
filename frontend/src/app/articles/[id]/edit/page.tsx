@@ -18,21 +18,45 @@ export default function EditArticle({ params }: { params: { id: string } }) {
   // フォームの入力値を管理するための state を用意
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
 
   // コンポーネントがマウントされたときにメモのデータを取得してフォームにセットする
   useEffect(() => {
-    if (!isLoginDataLoaded || !token) return;
+    // ログイン状態がまだロードされていない場合は何もしない
+    if (!isLoginDataLoaded) return;
+    // ログインしていない場合はサインインページにリダイレクトする
+    if (!token) {
+      router.replace("/signin");
+      return;
+    }
 
-    fetchArticle(token, params.id).then((data) => {
-      if (!data) return;
-      setTitle(data.title);
-      setContent(data.content);
-    });
-  }, [params.id, isLoginDataLoaded, token]);
+    let isMounted = true;
+
+    fetchArticle(token, params.id)
+      .then((data) => {
+        if (!isMounted) return;
+        if (!data) {
+          router.replace("/articles");
+          return;
+        }
+
+        setTitle(data.title);
+        setContent(data.content);
+        setIsLoading(false);
+      })
+      .catch(() => {
+        if (!isMounted) return;
+        router.replace("/articles");
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [params.id, isLoginDataLoaded, token, router]);
 
   // 更新ボタンがクリックされたときに呼び出される関数
   const updateArticle = async () => {
-    if (!token) return;
+    if (!token || isLoading) return;
 
     const response = await updateArticleRequest(token, params.id, {
       title,
@@ -43,6 +67,16 @@ export default function EditArticle({ params }: { params: { id: string } }) {
     // 更新が成功したらメモ一覧ページに遷移する
     router.push("/articles");
   };
+
+  if (isLoading) {
+    return (
+      <main className={styles.page}>
+        <section className={styles.panel}>
+          <p className={styles.empty}>読み込み中...</p>
+        </section>
+      </main>
+    );
+  }
 
   return (
     <main className={styles.page}>
