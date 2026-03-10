@@ -1,14 +1,21 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Article } from "@/types/Article/Article";
 import Link from "next/link";
 import styles from "./articles.module.css";
 import { useLoginData } from "@/hooks/useLoginData";
 // import AuthGuard from "../components/AuthGuard";
 
+type SortType =
+  | "updated_desc"
+  | "updated_asc"
+  | "created_desc"
+  | "created_asc";
+
 export default function ArticlesPage() {
   const [articles, setArticles] = useState<Article[]>([]);
+  const [sortType, setSortType] = useState<SortType>("updated_desc");
   const { loginData, isLoginDataLoaded } = useLoginData();
   const token = loginData?.token;
 
@@ -60,6 +67,33 @@ export default function ArticlesPage() {
     setArticles((prev) => prev.filter((article) => article.id !== id));
   };
 
+  const sortedArticles = useMemo(() => {
+    const list = [...articles];
+    const parseDate = (value: string) => new Date(value).getTime();
+    const compareByDate = (a: string, b: string, direction: "asc" | "desc") =>
+      direction === "asc" ? parseDate(a) - parseDate(b) : parseDate(b) - parseDate(a);
+
+    switch (sortType) {
+      case "updated_asc":
+        return list.sort((a, b) =>
+          compareByDate(a.updated_at, b.updated_at, "asc"),
+        );
+      case "created_desc":
+        return list.sort((a, b) =>
+          compareByDate(a.created_at, b.created_at, "desc"),
+        );
+      case "created_asc":
+        return list.sort((a, b) =>
+          compareByDate(a.created_at, b.created_at, "asc"),
+        );
+      case "updated_desc":
+      default:
+        return list.sort((a, b) =>
+          compareByDate(a.updated_at, b.updated_at, "desc"),
+        );
+    }
+  }, [articles, sortType]);
+
   return (
     <main className={styles.page}>
       <section className={styles.panel}>
@@ -73,13 +107,30 @@ export default function ArticlesPage() {
           </Link>
         </div>
 
+        <div className={styles.sortRow}>
+          <label htmlFor="sortType" className={styles.sortLabel}>
+            並び順
+          </label>
+          <select
+            id="sortType"
+            className={styles.sortSelect}
+            value={sortType}
+            onChange={(e) => setSortType(e.target.value as SortType)}
+          >
+            <option value="updated_desc">更新日が新しい順</option>
+            <option value="updated_asc">更新日が古い順</option>
+            <option value="created_desc">作成日が新しい順</option>
+            <option value="created_asc">作成日が古い順</option>
+          </select>
+        </div>
+
         {articles.length === 0 ? (
           <p className={styles.empty}>
             メモがありません。新規作成してください。
           </p>
         ) : (
           <div className={styles.articleList}>
-            {articles.map((article) => (
+            {sortedArticles.map((article) => (
               <article key={article.id} className={styles.articleItem}>
                 <Link
                   href={`/articles/${article.id}`}
