@@ -4,6 +4,24 @@ const { Articles } = db;
 
 // クラス
 class ArticleService {
+  async syncArticleIdSequence() {
+    await db.sequelize.query(`
+      SELECT setval(
+        pg_get_serial_sequence('"articles"', 'id'),
+        COALESCE((SELECT MAX(id) FROM "articles"), 1),
+        true
+      );
+    `);
+  }
+
+  isDuplicateArticleIdError(error) {
+    return (
+      error?.name === "SequelizeUniqueConstraintError" &&
+      Array.isArray(error?.errors) &&
+      error.errors.some((item) => item.path === "id")
+    );
+  }
+
   /**
    * 記事一覧取得
    * @param user_id
@@ -35,12 +53,22 @@ class ArticleService {
 
   // 記事新規作成
   async createArticle(user_id, title, content) {
-    const article = await Articles.create({
+    const payload = {
       title: title,
       content: content,
       author_id: user_id,
-    });
-    return article;
+    };
+
+    try {
+      return await Articles.create(payload);
+    } catch (error) {
+      if (!this.isDuplicateArticleIdError(error)) {
+        throw error;
+      }
+
+      await this.syncArticleIdSequence();
+      return await Articles.create(payload);
+    }
   }
 
   // 記事更新
