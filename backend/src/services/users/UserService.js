@@ -1,6 +1,6 @@
 // import nanoid from 'nanoid';
-import db from '../../models/index.js';
-import AuthService from '../auth/AuthService.js';
+import db from "../../models/index.js";
+import AuthService from "../auth/AuthService.js";
 
 const authService = new AuthService();
 
@@ -64,6 +64,30 @@ class UserService {
     }
 
     return resDataList;
+  }
+
+  /**
+   * ユーザー新規作成
+   * @param {string} name
+   * @param {string} email
+   * @param {string} password
+   * @return {{id:number,name:string,email:string}}
+   */
+  async createUser(name, email, password) {
+    // パスワードをハッシュ化する
+    const hash_password = authService.hashSha256(password);
+    // ユーザー情報を登録する
+    const row = await db.Users.create({
+      name,
+      email,
+      password: hash_password,
+    });
+    // 取得したデータを返却形式に整形して格納し返却する
+    return {
+      id: row.dataValues.id,
+      name: row.dataValues.name,
+      email: row.dataValues.email,
+    };
   }
 }
 
