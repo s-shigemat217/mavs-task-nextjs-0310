@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import styles from "@/articles/articles.module.css";
 import { useLoginData } from "@/hooks/useLoginData";
+import { createArticle as createArticleRequest } from "@/lib/articleApi";
 
 export default function NewArticle() {
   const router = useRouter();
@@ -19,15 +20,11 @@ export default function NewArticle() {
       return;
     }
 
-    const response = await fetch("http://localhost:3001/articles", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ title: nextTitle, content: nextContent }),
+    const response = await createArticleRequest(token, {
+      title: nextTitle,
+      content: nextContent,
     });
-    if (!response.ok) {
+    if (!response) {
       setError("メモの作成に失敗しました。");
       return;
     }

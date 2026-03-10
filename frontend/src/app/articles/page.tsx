@@ -5,18 +5,24 @@ import { Article } from "@/types/Article/Article";
 import Link from "next/link";
 import styles from "./articles.module.css";
 import { useLoginData } from "@/hooks/useLoginData";
+import {
+  deleteArticle as deleteArticleRequest,
+  fetchArticles,
+} from "@/lib/articleApi";
 // import AuthGuard from "../components/AuthGuard";
 
 type SortType = "updated_desc" | "updated_asc" | "created_desc" | "created_asc";
 const PAGE_SIZE = 10;
 
 export default function ArticlesPage() {
+  // メモのリストとソート・ページングの状態を管理するための state を定義
   const [articles, setArticles] = useState<Article[]>([]);
   const [sortType, setSortType] = useState<SortType>("updated_desc");
   const [currentPage, setCurrentPage] = useState(1);
   const { loginData, isLoginDataLoaded } = useLoginData();
   const token = loginData?.token;
 
+  // コンポーネントの初回レンダリング時にローカルストレージからソートタイプを読み込む
   useEffect(() => {
     const savedSortType = window.localStorage.getItem("article_list_sort_type");
     if (
@@ -29,33 +35,30 @@ export default function ArticlesPage() {
     }
   }, []);
 
+  // ソートタイプが変更されたときにローカルストレージに保存する
   useEffect(() => {
     window.localStorage.setItem("article_list_sort_type", sortType);
   }, [sortType]);
 
+  // ログイン状態が確認できた後に記事のデータを API から取得する
   useEffect(() => {
+    // ログイン状態がまだ確認できていない場合は何もしない
     if (!isLoginDataLoaded) return;
+    // トークンがない場合は記事のリストを空にして終了する
     if (!token) {
       setArticles([]);
       return;
     }
-    fetch("http://localhost:3001/articles", {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
-      .then((res) => res.json().then((data) => ({ ok: res.ok, data })))
-      .then(({ ok, data }) => {
-        if (!ok) {
-          setArticles([]);
-          return;
-        }
-        setArticles(Array.isArray(data) ? data : []);
+    // API に GET リクエストを送信して記事のデータを取得する
+    fetchArticles(token)
+      .then((data) => {
+        setArticles(data);
       })
       .catch((err) => console.error("Error fetching articles:", err));
     return undefined;
   }, [isLoginDataLoaded, token]);
 
+  // メモを削除するための関数を定義
   const deleteArticle = async (id: number) => {
     if (!token) {
       alert("サインインしてください。");
@@ -64,14 +67,9 @@ export default function ArticlesPage() {
     // 削除の確認ダイアログを表示し、ユーザーがキャンセルした場合は処理を中断する
     if (!confirm("削除しますか？")) return;
     // API に DELETE リクエストを送信してメモを削除する
-    const res = await fetch(`http://localhost:3001/articles/${id}`, {
-      method: "DELETE",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const res = await deleteArticleRequest(token, id);
     // レスポンスが正常かどうかをチェックし、異常な場合はエラーメッセージを表示して処理を中断する
-    if (!res.ok) {
+    if (!res) {
       alert("メモの削除に失敗しました。");
       return;
     }
@@ -197,11 +195,16 @@ export default function ArticlesPage() {
             ))}
 
             {sortedArticles.length > PAGE_SIZE && (
-              <nav className={styles.pagination} aria-label="メモ一覧のページ送り">
+              <nav
+                className={styles.pagination}
+                aria-label="メモ一覧のページ送り"
+              >
                 <button
                   type="button"
                   className={styles.pageButton}
-                  onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.max(1, prev - 1))
+                  }
                   disabled={currentPage === 1}
                 >
                   前へ

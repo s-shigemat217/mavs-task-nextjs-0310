@@ -4,6 +4,7 @@ import { Article } from "@/types/Article/Article";
 import Link from "next/link";
 import styles from "@/articles/articles.module.css";
 import { useLoginData } from "@/hooks/useLoginData";
+import { fetchArticle } from "@/lib/articleApi";
 
 export default function ArticleDetail({ params }: { params: { id: string } }) {
   const [article, setArticle] = useState<Article | null>(null);
@@ -17,17 +18,8 @@ export default function ArticleDetail({ params }: { params: { id: string } }) {
       return;
     }
 
-    fetch(`http://localhost:3001/articles/${params.id}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
-      .then((res) => res.json().then((data) => ({ ok: res.ok, data })))
-      .then(({ ok, data }) => {
-        if (!ok || !data?.id) {
-          setArticle(null);
-          return;
-        }
+    fetchArticle(token, params.id)
+      .then((data) => {
         setArticle(data);
       })
       .catch((err) => console.error("Error fetching article:", err));

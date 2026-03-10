@@ -1,10 +1,13 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Article } from "@/types/Article/Article";
 import Link from "next/link";
 import styles from "../../articles.module.css";
 import { useLoginData } from "@/hooks/useLoginData";
+import {
+  fetchArticle,
+  updateArticle as updateArticleRequest,
+} from "@/lib/articleApi";
 
 export default function EditArticle({ params }: { params: { id: string } }) {
   // router.push() を使うために useRouter を呼び出す
@@ -20,32 +23,22 @@ export default function EditArticle({ params }: { params: { id: string } }) {
   useEffect(() => {
     if (!isLoginDataLoaded || !token) return;
 
-    fetch(`http://localhost:3001/articles/${params.id}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
-      .then((res) => res.json().then((data) => ({ ok: res.ok, data })))
-      .then(({ ok, data }) => {
-        if (!ok || !data?.id) return;
-        setTitle(data.title);
-        setContent(data.content);
-      });
+    fetchArticle(token, params.id).then((data) => {
+      if (!data) return;
+      setTitle(data.title);
+      setContent(data.content);
+    });
   }, [params.id, isLoginDataLoaded, token]);
 
   // 更新ボタンがクリックされたときに呼び出される関数
   const updateArticle = async () => {
     if (!token) return;
 
-    const response = await fetch(`http://localhost:3001/articles/${params.id}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ title, content }),
+    const response = await updateArticleRequest(token, params.id, {
+      title,
+      content,
     });
-    if (!response.ok) return;
+    if (!response) return;
 
     // 更新が成功したらメモ一覧ページに遷移する
     router.push("/articles");

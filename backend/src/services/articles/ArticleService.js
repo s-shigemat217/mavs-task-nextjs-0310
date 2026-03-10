@@ -57,7 +57,7 @@ class ArticleService {
         },
       },
     );
-
+    // 更新後の情報を取得して返す
     return await Articles.findOne({
       where: {
         id: article_id,
