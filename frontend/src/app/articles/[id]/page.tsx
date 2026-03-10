@@ -3,16 +3,35 @@ import { useEffect, useState } from "react";
 import { Article } from "@/types/Article/Article";
 import Link from "next/link";
 import styles from "@/articles/articles.module.css";
+import { useLoginData } from "@/hooks/useLoginData";
 
 export default function ArticleDetail({ params }: { params: { id: string } }) {
   const [article, setArticle] = useState<Article | null>(null);
+  const { loginData, isLoginDataLoaded } = useLoginData();
+  const token = loginData?.token;
 
   useEffect(() => {
-    fetch(`http://localhost:3001/articles/${params.id}`)
-      .then((res) => res.json())
-      .then((data) => setArticle(data))
+    if (!isLoginDataLoaded) return;
+    if (!token) {
+      setArticle(null);
+      return;
+    }
+
+    fetch(`http://localhost:3001/articles/${params.id}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then((res) => res.json().then((data) => ({ ok: res.ok, data })))
+      .then(({ ok, data }) => {
+        if (!ok || !data?.id) {
+          setArticle(null);
+          return;
+        }
+        setArticle(data);
+      })
       .catch((err) => console.error("Error fetching article:", err));
-  }, [params.id]);
+  }, [params.id, isLoginDataLoaded, token]);
 
   if (!article) {
     return (

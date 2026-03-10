@@ -1,36 +1,55 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Article } from "@/types/Article/Article";
 import Link from "next/link";
 import styles from "./articles.module.css";
+import { useLoginData } from "@/hooks/useLoginData";
 // import AuthGuard from "../components/AuthGuard";
 
 export default function ArticlesPage() {
   const [articles, setArticles] = useState<Article[]>([]);
-  const hasRequestedArticles = useRef(false);
+  const { loginData, isLoginDataLoaded } = useLoginData();
+  const token = loginData?.token;
 
   useEffect(() => {
-    if (hasRequestedArticles.current) return;
-    hasRequestedArticles.current = true;
-
-    let isActive = true;
-
-    fetch("http://localhost:3001/articles")
-      .then((res) => res.json())
-      .then((data) => setArticles(data))
+    if (!isLoginDataLoaded) return;
+    if (!token) {
+      setArticles([]);
+      return;
+    }
+    fetch("http://localhost:3001/articles", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then((res) =>
+        res.json().then((data) => ({ ok: res.ok, data })),
+      )
+      .then(({ ok, data }) => {
+        if (!ok) {
+          setArticles([]);
+          return;
+        }
+        setArticles(Array.isArray(data) ? data : []);
+      })
       .catch((err) => console.error("Error fetching articles:", err));
-    return () => {
-      isActive = false;
-    };
-  }, []);
+    return undefined;
+  }, [isLoginDataLoaded, token]);
 
   const deleteArticle = async (id: number) => {
+    if (!token) {
+      alert("サインインしてください。");
+      return;
+    }
     // 削除の確認ダイアログを表示し、ユーザーがキャンセルした場合は処理を中断する
     if (!confirm("削除しますか？")) return;
     // API に DELETE リクエストを送信してメモを削除する
     const res = await fetch(`http://localhost:3001/articles/${id}`, {
       method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
     });
     // レスポンスが正常かどうかをチェックし、異常な場合はエラーメッセージを表示して処理を中断する
     if (!res.ok) {

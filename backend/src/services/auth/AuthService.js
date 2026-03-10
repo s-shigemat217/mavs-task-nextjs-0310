@@ -1,7 +1,4 @@
-import axios from 'axios';
 import jwt from 'jsonwebtoken';
-import jwkToPem from 'jwk-to-pem';
-import { promisify } from 'util';
 import config from '../../config/jwt-config.js';
 import crypto from 'crypto';
 
@@ -21,8 +18,10 @@ class AuthService {
    * jwtトークン発行
    * @param params
    */
-  createToken(email) {
+  createToken(user_id, email) {
     const payload = {
+      id: user_id,
+      user_id: user_id,
       email: email,
     };
     const token = jwt.sign(payload, config.jwt.secret, config.jwt.options);
