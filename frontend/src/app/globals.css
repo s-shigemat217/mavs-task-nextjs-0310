@@ -59,6 +59,18 @@ a {
   margin-bottom: 0.85rem;
 }
 
+.page-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.85rem;
+}
+
+.page-title-row .page-title {
+  margin-bottom: 0;
+}
+
 .page-description {
   color: var(--muted);
 }
@@ -82,4 +94,9 @@ a {
 
 .quick-link:hover {
   border-color: #adc7e5;
+}
+
+button.quick-link {
+  font: inherit;
+  cursor: pointer;
 }

@@ -1,5 +1,6 @@
 "use client";
 import { useRouter } from "next/navigation";
+import styles from "./header.module.css";
 import { useLoginData } from "@/hooks/useLoginData";
 
 export default function Header() {
@@ -10,4 +11,5 @@ export default function Header() {
     setLoginData(undefined);
     router.push("/");
   };
+  return <div className={styles.header}></div>;
 }

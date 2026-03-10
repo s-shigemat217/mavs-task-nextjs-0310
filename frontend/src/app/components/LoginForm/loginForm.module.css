@@ -1,4 +1,13 @@
 .loginForm_input {
-	display: block;
-	margin-bottom: 8px;
+  display: block;
+  margin-bottom: 8px;
+  padding: 4px 8px;
+  border-radius: 2px;
+  border: 1px solid #ccc;
+}
+
+.loginForm_error {
+  margin: 0 0 8px;
+  color: #d32f2f;
+  font-size: 12px;
 }

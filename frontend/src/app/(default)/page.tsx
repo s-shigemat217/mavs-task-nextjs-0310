@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useLoginData } from "../hooks/useLoginData";
 
 export default function Home() {
-  const { loginData, isLoginDataLoaded } = useLoginData();
+  const { loginData, isLoginDataLoaded, setLoginData } = useLoginData();
   const isSignedIn = Boolean(loginData?.token);
 
   if (!isLoginDataLoaded) {
@@ -20,7 +20,20 @@ export default function Home() {
   return (
     <main className="page-shell">
       <section className="basic-card">
-        <h2 className="page-title">ToDo Notes</h2>
+        {isSignedIn ? (
+          <div className="page-title-row">
+            <h2 className="page-title">Memo App</h2>
+            <button
+              type="button"
+              className="quick-link"
+              onClick={() => setLoginData(undefined)}
+            >
+              ログアウト
+            </button>
+          </div>
+        ) : (
+          <h2 className="page-title">Memo App</h2>
+        )}
         {isSignedIn ? (
           <>
             <p className="page-description">
