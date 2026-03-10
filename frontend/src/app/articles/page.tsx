@@ -8,10 +8,12 @@ import { useLoginData } from "@/hooks/useLoginData";
 // import AuthGuard from "../components/AuthGuard";
 
 type SortType = "updated_desc" | "updated_asc" | "created_desc" | "created_asc";
+const PAGE_SIZE = 10;
 
 export default function ArticlesPage() {
   const [articles, setArticles] = useState<Article[]>([]);
   const [sortType, setSortType] = useState<SortType>("updated_desc");
+  const [currentPage, setCurrentPage] = useState(1);
   const { loginData, isLoginDataLoaded } = useLoginData();
   const token = loginData?.token;
 
@@ -106,6 +108,32 @@ export default function ArticlesPage() {
     }
   }, [articles, sortType]);
 
+  const totalPages = Math.ceil(sortedArticles.length / PAGE_SIZE);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [sortType]);
+
+  useEffect(() => {
+    if (totalPages === 0) {
+      if (currentPage !== 1) setCurrentPage(1);
+      return;
+    }
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
+
+  const paginatedArticles = useMemo(() => {
+    const start = (currentPage - 1) * PAGE_SIZE;
+    return sortedArticles.slice(start, start + PAGE_SIZE);
+  }, [currentPage, sortedArticles]);
+
+  const pageNumbers = useMemo(
+    () => Array.from({ length: totalPages }, (_, index) => index + 1),
+    [totalPages],
+  );
+
   return (
     <main className={styles.page}>
       <section className={styles.panel}>
@@ -142,7 +170,7 @@ export default function ArticlesPage() {
           </p>
         ) : (
           <div className={styles.articleList}>
-            {sortedArticles.map((article) => (
+            {paginatedArticles.map((article) => (
               <article key={article.id} className={styles.articleItem}>
                 <Link
                   href={`/articles/${article.id}`}
@@ -167,6 +195,44 @@ export default function ArticlesPage() {
                 </div>
               </article>
             ))}
+
+            {sortedArticles.length > PAGE_SIZE && (
+              <nav className={styles.pagination} aria-label="メモ一覧のページ送り">
+                <button
+                  type="button"
+                  className={styles.pageButton}
+                  onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                  disabled={currentPage === 1}
+                >
+                  前へ
+                </button>
+
+                {pageNumbers.map((page) => (
+                  <button
+                    key={page}
+                    type="button"
+                    className={`${styles.pageButton} ${
+                      currentPage === page ? styles.pageButtonActive : ""
+                    }`}
+                    onClick={() => setCurrentPage(page)}
+                    aria-current={currentPage === page ? "page" : undefined}
+                  >
+                    {page}
+                  </button>
+                ))}
+
+                <button
+                  type="button"
+                  className={styles.pageButton}
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.min(totalPages, prev + 1))
+                  }
+                  disabled={currentPage === totalPages}
+                >
+                  次へ
+                </button>
+              </nav>
+            )}
           </div>
         )}
       </section>

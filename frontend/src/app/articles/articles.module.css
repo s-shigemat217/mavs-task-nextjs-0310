@@ -57,6 +57,41 @@
   gap: 0.75rem;
 }
 
+.pagination {
+  display: flex;
+  gap: 0.4rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 0.75rem;
+}
+
+.pageButton {
+  border: 1px solid var(--border);
+  background: #fff;
+  color: var(--text);
+  border-radius: 8px;
+  min-width: 2.1rem;
+  height: 2.1rem;
+  padding: 0 0.55rem;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.pageButton:hover:not(:disabled) {
+  border-color: #b7c9dd;
+}
+
+.pageButton:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.pageButtonActive {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+}
+
 .articleItem {
   display: flex;
   justify-content: space-between;
