@@ -6,6 +6,7 @@ import { LoginResponse } from "@/types/Login/LoginResponse";
 import { useLoginData } from "@/hooks/useLoginData";
 import { useRouter } from "next/navigation";
 import styles from "@/articles/articles.module.css";
+import { requestJson } from "@/lib/api";
 
 export default function LoginForm() {
   const router = useRouter();
@@ -18,28 +19,35 @@ export default function LoginForm() {
   } = useForm<LoginRequest>();
   const onSubmit = handleSubmit(async (request: LoginRequest) => {
     setAuthError("");
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/signin`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: request.email,
-          password: request.password,
-        }),
+    const response = await requestJson<LoginResponse>("/auth/signin", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
       },
-    );
-    const data: LoginResponse = await response.json();
-    if (data.token) {
+      body: JSON.stringify({
+        email: request.email,
+        password: request.password,
+      }),
+    });
+    if (response.ok && response.data?.token) {
       // トークンの保持
-      setLoginData(data);
+      setLoginData(response.data);
       router.push("/");
-    } else {
+      return;
+    }
+
+    if (response.status === 401) {
       setAuthError("メールアドレスまたはパスワードが正しくありません。");
       reset();
+      return;
     }
+
+    if (response.status === 400) {
+      setAuthError("入力内容を確認してください。");
+      return;
+    }
+
+    setAuthError("サインインに失敗しました。時間をおいて再度お試しください。");
   });
   return (
     <form className={styles.form} onSubmit={onSubmit}>

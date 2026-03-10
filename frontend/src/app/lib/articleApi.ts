@@ -1,9 +1,7 @@
 import { Article } from "@/types/Article/Article";
+import { requestJson } from "@/lib/api";
 
 type ArticleInput = Pick<Article, "title" | "content">;
-
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3001";
 
 const buildHeaders = (token: string, includeJsonContentType = false) => {
   const headers: HeadersInit = {
@@ -22,7 +20,7 @@ const requestArticleApi = async <T>(
   token: string,
   init?: RequestInit,
 ): Promise<T | null> => {
-  const response = await fetch(`${API_BASE_URL}${path}`, {
+  const response = await requestJson<T>(path, {
     ...init,
     headers: {
       ...buildHeaders(token),
@@ -34,7 +32,7 @@ const requestArticleApi = async <T>(
     return null;
   }
 
-  return (await response.json()) as T;
+  return response.data;
 };
 
 export const fetchArticles = async (token: string): Promise<Article[]> => {
@@ -75,7 +73,7 @@ export const deleteArticle = async (
   token: string,
   id: string | number,
 ): Promise<boolean> => {
-  const response = await fetch(`${API_BASE_URL}/articles/${id}`, {
+  const response = await requestJson<unknown>(`/articles/${id}`, {
     method: "DELETE",
     headers: buildHeaders(token),
   });

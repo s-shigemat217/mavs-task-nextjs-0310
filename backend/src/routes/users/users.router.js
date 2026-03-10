@@ -20,7 +20,7 @@ router.post("/", async (req, res) => {
     }
 
     // メールアドレスの重複チェック
-    const resSearchUser = await userService.searchUser("", "", email, "");
+    const resSearchUser = await userService.searchUser({ email });
     if (resSearchUser.length > 0) {
       return res.status(409).json({ message: "email already exists" });
     }

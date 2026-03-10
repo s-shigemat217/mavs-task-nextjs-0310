@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { SignupRequest } from "@/types/Signup/SignupRequest";
 import { SignupResponse } from "@/types/Signup/SignupResponse";
 import styles from "@/articles/articles.module.css";
+import { requestJson } from "@/lib/api";
 
 export default function SignupForm() {
   const [signupError, setSignupError] = useState("");
@@ -17,45 +18,35 @@ export default function SignupForm() {
     setSignupError("");
     setSignedUpUser(undefined);
 
-    try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/users`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            name: request.name,
-            email: request.email,
-            password: request.password,
-          }),
-        },
-      );
+    const response = await requestJson<SignupResponse>("/users", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        name: request.name,
+        email: request.email,
+        password: request.password,
+      }),
+    });
 
-      if (response.status === 201) {
-        const data: SignupResponse = await response.json();
-        setSignedUpUser(data);
-        reset();
-        return;
-      }
-
-      if (response.status === 409) {
-        setSignupError("このメールアドレスは既に登録されています。");
-        return;
-      }
-
-      if (response.status === 400) {
-        setSignupError("入力内容を確認してください。");
-        return;
-      }
-
-      setSignupError("登録に失敗しました。時間をおいて再度お試しください。");
-    } catch {
-      setSignupError(
-        "通信エラーが発生しました。時間をおいて再度お試しください。",
-      );
+    if (response.status === 201 && response.data) {
+      setSignedUpUser(response.data);
+      reset();
+      return;
     }
+
+    if (response.status === 409) {
+      setSignupError("このメールアドレスは既に登録されています。");
+      return;
+    }
+
+    if (response.status === 400) {
+      setSignupError("入力内容を確認してください。");
+      return;
+    }
+
+    setSignupError("登録に失敗しました。時間をおいて再度お試しください。");
   });
 
   if (signedUpUser) {

@@ -9,18 +9,24 @@ const authService = new AuthService();
 /**
  * サインイン
  */
-router.post('/signin', async (req, res, next) => {
+router.post('/signin', async (req, res) => {
   try {
     // リクエストパラメーター
     const { email, password } = req.body;
 
-    if (!email) return res.status(200).json({});
+    if (!email || !password) {
+      return res
+        .status(400)
+        .json({ message: 'email and password are required' });
+    }
 
     // ユーザー存在チェックを行う
-    const resSearchUser = await userService.searchUser('', '', email, password);
+    const resSearchUser = await userService.searchUser({ email, password });
 
-    // パラメータ存在しない場合は再ログインを促すため、空で返却する
-    if (!resSearchUser.length) return res.status(200).json({});
+    // パラメータ存在しない場合は認証エラーを返却する
+    if (!resSearchUser.length) {
+      return res.status(401).json({ message: 'invalid credentials' });
+    }
 
     const signedInUser = resSearchUser[0];
 

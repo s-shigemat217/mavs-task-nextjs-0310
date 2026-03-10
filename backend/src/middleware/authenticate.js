@@ -17,7 +17,7 @@ const authenticate = async function authenticate(req, res, next) {
     const decoded = authService.checkToken(token);
     let user = decoded;
     if (!user.id && user.email) {
-      const users = await userService.searchUser('', '', user.email, '');
+      const users = await userService.searchUser({ email: user.email });
       if (users.length > 0) {
         user = {
           ...user,

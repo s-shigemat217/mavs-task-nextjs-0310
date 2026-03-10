@@ -3,6 +3,10 @@ import db from "../../models/index.js";
 import AuthService from "../auth/AuthService.js";
 
 const authService = new AuthService();
+const toUserResponse = (row) => {
+  const { id, name, email } = row.get({ plain: true });
+  return { id, name, email };
+};
 
 // クラス
 class UserService {
@@ -13,22 +17,19 @@ class UserService {
    */
   async getUser(user_id) {
     // ユーザーIDをキーにユーザー情報を取得する
-    const rows = await db.Users.findOne({ where: { id: user_id } });
-    console.log(rows.dataValues);
-    // 取得したデータを返却形式に整形して格納し返却する
-    const resData = {
-      id: rows.dataValues.id,
-      name: rows.dataValues.name,
-      email: rows.dataValues.email,
-    };
-    return resData;
+    const row = await db.Users.findOne({ where: { id: user_id } });
+    if (!row) {
+      return null;
+    }
+    // 取得したデータを返却形式に整形して返却する
+    return toUserResponse(row);
   }
   /**
    * ユーザー情報検索
    * @param 検索条件
    * @return ユーザー情報リスト
    */
-  async searchUser(id, name, email, password) {
+  async searchUser({ id, name, email, password } = {}) {
     const where = {};
     // IDが指定されている場合はIDを条件へ追加する
     if (id) {
@@ -52,18 +53,7 @@ class UserService {
     const rows = await db.Users.findAll({ where });
 
     // 取得したデータを返却形式に整形して格納し返却する
-    const resDataList = [];
-    for (const row of rows) {
-      const resData = {
-        id: row.dataValues.id,
-        name: row.dataValues.name,
-        email: row.dataValues.email,
-      };
-      // 返却用リストへ格納する
-      resDataList.push(resData);
-    }
-
-    return resDataList;
+    return rows.map(toUserResponse);
   }
 
   /**
@@ -83,11 +73,7 @@ class UserService {
       password: hash_password,
     });
     // 取得したデータを返却形式に整形して格納し返却する
-    return {
-      id: row.dataValues.id,
-      name: row.dataValues.name,
-      email: row.dataValues.email,
-    };
+    return toUserResponse(row);
   }
 }
 

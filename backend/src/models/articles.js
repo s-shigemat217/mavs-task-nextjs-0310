@@ -15,7 +15,7 @@ const createModel = (sequelize, DataTypes) => {
     {
       title: DataTypes.STRING,
       content: DataTypes.STRING,
-      author_id: DataTypes.STRING,
+      author_id: DataTypes.INTEGER,
       created_at: DataTypes.DATE,
       updated_at: DataTypes.DATE,
     },
