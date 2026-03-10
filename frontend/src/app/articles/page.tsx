@@ -77,6 +77,7 @@ export default function ArticlesPage() {
     setArticles((prev) => prev.filter((article) => article.id !== id));
   };
 
+  // ソートされた記事のリストを計算するための useMemo フックを定義
   const sortedArticles = useMemo(() => {
     const list = [...articles];
     const parseDate = (value: string) => new Date(value).getTime();
@@ -106,12 +107,15 @@ export default function ArticlesPage() {
     }
   }, [articles, sortType]);
 
+  // 総ページ数を計算する
   const totalPages = Math.ceil(sortedArticles.length / PAGE_SIZE);
 
+  // ソートタイプが変更されたときに現在のページを1にリセットする
   useEffect(() => {
     setCurrentPage(1);
   }, [sortType]);
 
+  // 現在のページが総ページ数を超えている場合に現在のページを総ページ数に修正する
   useEffect(() => {
     if (totalPages === 0) {
       if (currentPage !== 1) setCurrentPage(1);
@@ -122,11 +126,13 @@ export default function ArticlesPage() {
     }
   }, [currentPage, totalPages]);
 
+  // 現在のページに表示する記事のリストを計算するための useMemo フックを定義
   const paginatedArticles = useMemo(() => {
     const start = (currentPage - 1) * PAGE_SIZE;
     return sortedArticles.slice(start, start + PAGE_SIZE);
   }, [currentPage, sortedArticles]);
 
+  // ページ番号のリストを計算するための useMemo フックを定義
   const pageNumbers = useMemo(
     () => Array.from({ length: totalPages }, (_, index) => index + 1),
     [totalPages],

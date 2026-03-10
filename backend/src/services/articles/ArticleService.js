@@ -4,6 +4,7 @@ const { Articles } = db;
 
 // クラス
 class ArticleService {
+  // シーケンスの値を最新にする
   async syncArticleIdSequence() {
     await db.sequelize.query(`
       SELECT setval(
@@ -14,6 +15,7 @@ class ArticleService {
     `);
   }
 
+  // 記事IDの重複エラーかどうかを判定
   isDuplicateArticleIdError(error) {
     return (
       error?.name === "SequelizeUniqueConstraintError" &&
